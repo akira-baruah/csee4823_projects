@@ -190,4 +190,80 @@ BEGIN
         end if;
     END CASE;
   END PROCESS;
+
+  output: PROCESS (state)
+  BEGIN
+    CASE state IS
+      -- listening / addr states
+      WHEN SL0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SL1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SL2 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SA0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SA1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+        addr_out <= '0';
+      WHEN SA1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+        addr_out <= '1';
+
+      --write states
+      WHEN SW0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SW1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+        data_out <= '1';
+      WHEN SW2 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+        data_out <= '0';
+      WHEN SWA0 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
+      WHEN SWA1 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
+
+      -- read states
+      WHEN SR0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SR1 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
+      WHEN SR2 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '1';
+      WHEN SR3 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
+      WHEN SR4 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '1';
+      WHEN SRA0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SRA1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+
+    END CASE;
+  END PROCESS; --output
 END beh;
