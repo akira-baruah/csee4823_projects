@@ -73,6 +73,56 @@ BEGIN
         ELSE
           assert false report "unexpected state" severity FAILURE;
         END IF
+
+
+          when SW0 =>
+        if SCL_in = '0' then
+          state <= SW0;
+        elsif SDA_in = '0' and SCL_in = '1' then
+          state <= SW1;
+        elsif SDA_in = '1' and SCL_in = '1' then
+          state <= SW2;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SW1 =>
+        if SDA_in = '1' and SCL_in = '1' then
+          state <= SW1;
+        elsif SCL_in = '0' and byte_done = '0' then
+          state <= SW0;
+        elsif SCL_in = '0' and byte_done = '1' then
+          state <= SWA0;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SW2 =>
+        if SDA_in = '0' and SCL_in = '1' then
+          state <= SW0;
+        elsif SDA_in = '1' and SCL_in = '1' then
+          state <= SL0; 
+        elsif SCL_in = '0' and byte_done = '0' then
+          state <= SW0;
+        elsif SCL_in = '0' and byte_done = '1' then
+          state <= SWA0;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SWA0 =>
+        if SCL_in = '0' then
+          state <= SWA0;
+        elsif SCL_in = '1' then
+          state <= SWA1;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SWA1 =>
+        if SCL_in = '0' then
+          state <= SW0;
+        elsif SCL_in = '1' then
+          state <= SWA1;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
     END CASE;
   END PROCESS;
 END beh;
