@@ -17,6 +17,62 @@ BEGIN
     END IF;
 
     CASE state IS
+      WHEN SL0 =>
+        IF (SDA_in = '1' AND SCL_in = '1') THEN
+          state <= SL1;
+        ELSE
+          state <= SL0;
+        END IF
+      WHEN SL1 =>
+        IF (SDA_in = '1' AND SCL_in = '1') THEN
+          state <= SL1;
+        ELSIF (SDA_in = '0' AND SCL_in = '1') THEN
+          state <= SL2;
+        ELSIF (SCL_in = '0') THEN
+          state <= SL0;
+        ELSE
+          assert false report "unexpected state" severity FAILURE;
+        END IF
+      WHEN SL2 =>
+        IF (SCL_in = '0') THEN
+          state <= SA0;
+        ELSIF (SCL_in = '1') THEN
+          state <= SL2;
+        END IF
+      WHEN SA0 =>
+        IF (SCL_in = '0') THEN
+          state <= SA0;
+        ELSIF (SDA_in = '0' AND SCL_in = '1') THEN
+          state <= SA1;
+        ELSIF (SDA_in = '1' AND SCL_in = '1') THEN
+          state <= SA2;
+        ELSE
+          assert false report "unexpected state" severity FAILURE;
+        END IF
+      WHEN SA1 =>
+        IF (SDA_in = '0' AND SCL_in = '1') THEN
+          state <= SA1;
+        ELSIF (SCL_in = '0' AND addr_match = '1') THEN
+          assert byte_done == '1' report "byte_done not high" severity ERROR;
+          state <= SW0;
+        ELSIF (SCL_in = '0' AND addr_match = '0') THEN
+          assert byte_done == '1' report "byte_done not high" severity ERROR;
+          state <= SL0;
+        ELSE
+          assert false report "unexpected state" severity FAILURE;
+        END IF
+      WHEN SA2 =>
+        IF (SDA_in = '1' AND SCL_in = '1') THEN
+          state <= SA2;
+        ELSIF (SCL_in = '0' AND addr_match = '1') THEN
+          assert byte_done == '1' report "byte_done not high" severity ERROR;
+          state <= SR0;
+        ELSIF (SCL_in = '0' AND addr_match = '0') THEN
+          assert byte_done == '1' report "byte_done not high" severity ERROR;
+          state <= SL0;
+        ELSE
+          assert false report "unexpected state" severity FAILURE;
+        END IF
     END CASE;
   END PROCESS;
 END beh;
