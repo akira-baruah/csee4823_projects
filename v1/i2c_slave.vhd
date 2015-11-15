@@ -1,21 +1,18 @@
 LIBRARY ieee;
-USE iee.std_logic_1164.all;
+USE ieee.std_logic_1164.all;
 
 ENTITY i2c_slave IS
-  PORT(clk_hi, SCL_in, SDA_in, byte_done, addr_match      :IN  STD_LOGIC;
-       SDA_out, SDA_enable, data_out, addr_out, nack_sent :OUT STD_LOGIC);
+  PORT(clk_hi, SCL_in, SDA_in, byte_done, addr_match_bs   :IN  STD_LOGIC;
+       SDA_out, SDA_en, data_out, addr_out, nack_sent :OUT STD_LOGIC);
 END i2c_slave;
 
 ARCHITECTURE beh OF i2c_slave IS
   TYPE state_t IS (SL0, SL1, SL2, SA0, SA1, SA2, SR0, SR1, SR2, SR3, SR4, SRA0, SRA1, SW0, SW1, SW2, SWA0, SWA1);
-  signal state: state_t := SL0
+  signal state: state_t := SL0;
 BEGIN
   PROCESS (clk_hi)
   BEGIN
-    IF (clk_hi'EVENT AND clk_hi = '0') THEN
-      exit
-    END IF;
-
+    IF (clk_hi'EVENT AND clk_hi = '1') THEN
     CASE state IS
       -- 'Setup' portion
       WHEN SL0 =>
@@ -23,7 +20,7 @@ BEGIN
           state <= SL1;
         ELSE
           state <= SL0;
-        END IF
+        END IF;
       WHEN SL1 =>
         IF (SDA_in = '1' AND SCL_in = '1') THEN
           state <= SL1;
@@ -33,13 +30,13 @@ BEGIN
           state <= SL0;
         ELSE
           assert false report "unexpected state" severity FAILURE;
-        END IF
+        END IF;
       WHEN SL2 =>
         IF (SCL_in = '0') THEN
           state <= SA0;
         ELSIF (SCL_in = '1') THEN
           state <= SL2;
-        END IF
+        END IF;
       WHEN SA0 =>
         IF (SCL_in = '0') THEN
           state <= SA0;
@@ -49,33 +46,33 @@ BEGIN
           state <= SA2;
         ELSE
           assert false report "unexpected state" severity FAILURE;
-        END IF
+        END IF;
       WHEN SA1 =>
         IF (SDA_in = '0' AND SCL_in = '1') THEN
           state <= SA1;
-        ELSIF (SCL_in = '0' AND addr_match = '1') THEN
-          assert byte_done == '1' report "byte_done not high" severity ERROR;
+        ELSIF (SCL_in = '0' AND addr_match_bs = '1') THEN
+          assert (byte_done = '1') report "byte_done not high" severity ERROR;
           state <= SW0;
-        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '0') THEN
+        ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '0') THEN
           state <= SA0;
-        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '1') THEN
+        ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '1') THEN
           state <= SL0;
         ELSE
           assert false report "unexpected state" severity FAILURE;
-        END IF
+        END IF;
       WHEN SA2 =>
         IF (SDA_in = '1' AND SCL_in = '1') THEN
           state <= SA2;
-        ELSIF (SCL_in = '0' AND addr_match = '1') THEN
-          assert byte_done == '1' report "byte_done not high" severity ERROR;
+        ELSIF (SCL_in = '0' AND addr_match_bs = '1') THEN
+          assert byte_done = '1' report "byte_done not high" severity ERROR;
           state <= SR0;
-        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '0') THEN
+        ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '0') THEN
           state <= SA0;
-        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '1') THEN
+        ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '1') THEN
           state <= SL0;
         ELSE
           assert false report "unexpected state" severity FAILURE;
-        END IF
+        END IF;
 
       -- 'write' portion
       when SW0 =>
@@ -129,9 +126,9 @@ BEGIN
 
       -- 'read' portion
       when SR0 =>
-        if SCL_in = '0' and bit_send = '0' then
+        if SCL_in = '0' and addr_match_bs = '0' then
           state <= SR1;
-        elsif SCL_in = '0' and bit_send = '1' then
+        elsif SCL_in = '0' and addr_match_bs = '1' then
           state <= SR2;
         else
           assert false report "unexpected state" severity ERROR;
@@ -189,10 +186,15 @@ BEGIN
           assert false report "unexpected state" severity ERROR;
         end if;
     END CASE;
+    END IF;
   END PROCESS;
 
   output: PROCESS (state)
   BEGIN
+    -- explicitly set to don't care
+    data_out <= 'X';
+    addr_out <= 'X';
+    SDA_out <= 'X';
     CASE state IS
       -- listening / addr states
       WHEN SL0 =>
@@ -211,7 +213,7 @@ BEGIN
         SDA_en <= '0';
         nack_sent <= '0';
         addr_out <= '0';
-      WHEN SA1 =>
+      WHEN SA2 =>
         SDA_en <= '0';
         nack_sent <= '0';
         addr_out <= '1';
