@@ -17,6 +17,7 @@ BEGIN
     END IF;
 
     CASE state IS
+      -- 'Setup' portion
       WHEN SL0 =>
         IF (SDA_in = '1' AND SCL_in = '1') THEN
           state <= SL1;
@@ -74,8 +75,8 @@ BEGIN
           assert false report "unexpected state" severity FAILURE;
         END IF
 
-
-          when SW0 =>
+      -- 'write' portion
+      when SW0 =>
         if SCL_in = '0' then
           state <= SW0;
         elsif SDA_in = '0' and SCL_in = '1' then
@@ -99,7 +100,7 @@ BEGIN
         if SDA_in = '0' and SCL_in = '1' then
           state <= SW0;
         elsif SDA_in = '1' and SCL_in = '1' then
-          state <= SL0; 
+          state <= SL0;
         elsif SCL_in = '0' and byte_done = '0' then
           state <= SW0;
         elsif SCL_in = '0' and byte_done = '1' then
@@ -120,6 +121,68 @@ BEGIN
           state <= SW0;
         elsif SCL_in = '1' then
           state <= SWA1;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+
+      -- 'read' portion
+      when SR0 =>
+        if SCL_in = '0' and bit_send = '0' then
+          state <= SR1;
+        elsif SCL_in = '0' and bit_send = '1' then
+          state <= SR2;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SR1 =>
+        if SCL_in = '0' then
+          state <= SR1;
+        elsif SCL_in = '1' then
+          state <= SR3;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SR2 =>
+        if SCL_in = '0' then
+          state <= SR2;
+        elsif SCL_in = '1' then
+          state <= SR4;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SR3 =>
+        if SCL_in = '1' then
+          state <= SR3;
+        elsif SCL_in = '0' and byte_done = '0' then
+          state <= SR0;
+        elsif SCL_in = '0' and byte_done = '1' then
+          state <= SRA0;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SR4 =>
+        if SCL_in = '1' then
+          state <= SR4;
+        elsif SCL_in = '0' and byte_done = '0' then
+          state <= SR0;
+        elsif SCL_in = '0' and byte_done = '1' then
+          state <= SRA0;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SRA0 =>
+        if SDA_in = '0' and SCL_in = '0' then
+          state <= SRA0;
+        elsif SDA_in = '0' and SCL_in = '1' then
+          state <= SRA1;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SRA1 =>
+        if SCL_in = '0' then
+          state <= SR0;
+        elsif SDA_in = '0' and SCL_in = '1' then
+          state <= SRA1;
         else
           assert false report "unexpected state" severity ERROR;
         end if;
