@@ -55,8 +55,9 @@ BEGIN
         ELSIF (SCL_in = '0' AND addr_match = '1') THEN
           assert byte_done == '1' report "byte_done not high" severity ERROR;
           state <= SW0;
-        ELSIF (SCL_in = '0' AND addr_match = '0') THEN
-          assert byte_done == '1' report "byte_done not high" severity ERROR;
+        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '0') THEN
+          state <= SA0;
+        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '1') THEN
           state <= SL0;
         ELSE
           assert false report "unexpected state" severity FAILURE;
@@ -67,8 +68,9 @@ BEGIN
         ELSIF (SCL_in = '0' AND addr_match = '1') THEN
           assert byte_done == '1' report "byte_done not high" severity ERROR;
           state <= SR0;
-        ELSIF (SCL_in = '0' AND addr_match = '0') THEN
-          assert byte_done == '1' report "byte_done not high" severity ERROR;
+        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '0') THEN
+          state <= SA0;
+        ELSIF (SCL_in = '0' AND addr_match = '0' AND byte_done = '1') THEN
           state <= SL0;
         ELSE
           assert false report "unexpected state" severity FAILURE;
