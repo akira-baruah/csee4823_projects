@@ -32,6 +32,11 @@ HEADER
 	GRID_DUTY_CYCLE = 50;
 }
 
+USER_TYPE("__state")
+{
+	VALUES = "Undefined";
+}
+
 SIGNAL("addr_match_bs")
 {
 	VALUE_TYPE = NINE_LEVEL_BIT;
@@ -80,6 +85,17 @@ SIGNAL("SDA_in")
 	LSB_INDEX = -1;
 	DIRECTION = INPUT;
 	PARENT = "";
+}
+
+SIGNAL("state")
+{
+	VALUE_TYPE = ENUM;
+	SIGNAL_TYPE = SINGLE_BIT;
+	WIDTH = 1;
+	LSB_INDEX = -1;
+	DIRECTION = MACHINE;
+	PARENT = "";
+	ENUM_NAME = "__state";
 }
 
 TRANSITION_LIST("addr_match_bs")
@@ -159,6 +175,15 @@ TRANSITION_LIST("SDA_in")
 	}
 }
 
+TRANSITION_LIST("state")
+{
+	NODE
+	{
+		REPEAT = 1;
+		LEVEL Undefined FOR 2500.0;
+	}
+}
+
 DISPLAY_LINE
 {
 	CHANNEL = "clk_hi";
@@ -201,6 +226,15 @@ DISPLAY_LINE
 	EXPAND_STATUS = COLLAPSED;
 	RADIX = ASCII;
 	TREE_INDEX = 4;
+	TREE_LEVEL = 0;
+}
+
+DISPLAY_LINE
+{
+	CHANNEL = "state";
+	EXPAND_STATUS = COLLAPSED;
+	RADIX = ASCII;
+	TREE_INDEX = 5;
 	TREE_LEVEL = 0;
 }
 

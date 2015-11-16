@@ -52,7 +52,7 @@ BEGIN
           state <= SA1;
         ELSIF (SCL_in = '0' AND addr_match_bs = '1') THEN
           assert (byte_done = '1') report "byte_done not high" severity ERROR;
-          state <= SW0;
+          state <= SWA0;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '0') THEN
           state <= SA0;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '1') THEN
@@ -65,7 +65,7 @@ BEGIN
           state <= SA2;
         ELSIF (SCL_in = '0' AND addr_match_bs = '1') THEN
           assert byte_done = '1' report "byte_done not high" severity ERROR;
-          state <= SR0;
+          state <= SRA0;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '0') THEN
           state <= SA0;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '1') THEN
@@ -86,24 +86,24 @@ BEGIN
           assert false report "unexpected state" severity ERROR;
         end if;
       when SW1 =>
-        if SDA_in = '1' and SCL_in = '1' then
+        if SCL_in = '1' AND SDA_in = '0' THEN
           state <= SW1;
-        elsif SCL_in = '0' and byte_done = '0' then
-          state <= SW0;
-        elsif SCL_in = '0' and byte_done = '1' then
+        elsif SCL_in = '1' AND SDA_in = '1' THEN
+          state <= SL0;
+        elsif SCL_in = '0' AND byte_done = '1' THEN
           state <= SWA0;
+        elsif SCL_in = '0' AND byte_done = '0' THEN
+          state <= SW0;
         else
           assert false report "unexpected state" severity ERROR;
         end if;
       when SW2 =>
-        if SDA_in = '0' and SCL_in = '1' then
-          state <= SW0;
-        elsif SDA_in = '1' and SCL_in = '1' then
-          state <= SL0;
-        elsif SCL_in = '0' and byte_done = '0' then
-          state <= SW0;
-        elsif SCL_in = '0' and byte_done = '1' then
+        if SCL_in = '1' AND SDA_in = '1' THEN
+          state <= SW2;
+        elsif SCL_in = '0' AND byte_done = '1' THEN
           state <= SWA0;
+        elsif SCL_in = '0' AND byte_done = '0' THEN
+          state <= SW0;
         else
           assert false report "unexpected state" severity ERROR;
         end if;
@@ -225,11 +225,11 @@ BEGIN
       WHEN SW1 =>
         SDA_en <= '0';
         nack_sent <= '0';
-        data_out <= '1';
+        data_out <= '0';
       WHEN SW2 =>
         SDA_en <= '0';
         nack_sent <= '0';
-        data_out <= '0';
+        data_out <= '1';
       WHEN SWA0 =>
         SDA_en <= '1';
         nack_sent <= '0';
@@ -260,11 +260,13 @@ BEGIN
         nack_sent <= '0';
         SDA_out <= '1';
       WHEN SRA0 =>
-        SDA_en <= '0';
+        SDA_en <= '1';
         nack_sent <= '0';
+        SDA_out <= '0';
       WHEN SRA1 =>
-        SDA_en <= '0';
+        SDA_en <= '1';
         nack_sent <= '0';
+        SDA_out <= '0';
 
     END CASE;
   END PROCESS; --output
