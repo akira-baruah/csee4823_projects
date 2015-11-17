@@ -260,14 +260,11 @@ BEGIN
         nack_sent <= '0';
         SDA_out <= '1';
       WHEN SRA0 =>
-        SDA_en <= '1';
+        SDA_en <= '0';
         nack_sent <= '0';
-        SDA_out <= '0';
       WHEN SRA1 =>
-        SDA_en <= '1';
+        SDA_en <= '0';
         nack_sent <= '0';
-        SDA_out <= '0';
-
     END CASE;
   END PROCESS; --output
 END beh;
