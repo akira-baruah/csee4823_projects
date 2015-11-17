@@ -7,7 +7,9 @@ ENTITY i2c_slave IS
 END i2c_slave;
 
 ARCHITECTURE beh OF i2c_slave IS
-  TYPE state_t IS (SL0, SL1, SL2, SA0, SA1, SA2, SR0, SR1, SR2, SR3, SR4, SRA0, SRA1, SW0, SW1, SW2, SWA0, SWA1);
+  TYPE state_t IS (SL0, SL1, SL2, SA0, SA1, SA2,
+    SR0, SR1, SR2, SR3, SR4, SRA0, SRA1, SRA2, SRS0, SRS1,
+    SW0, SW1, SW2, SWA0, SWA1);
   signal state: state_t := SL0;
 BEGIN
   PROCESS (clk_hi)
@@ -174,6 +176,8 @@ BEGIN
           state <= SRA0;
         elsif SDA_in = '0' and SCL_in = '1' then
           state <= SRA1;
+        elsif SDA_in = '1' and SCL_in = '1' then
+          state <= SRA2;
         else
           assert false report "unexpected state" severity ERROR;
         end if;
@@ -185,6 +189,28 @@ BEGIN
         else
           assert false report "unexpected state" severity ERROR;
         end if;
+      when SRA2 =>
+        if SDA_in = '1' and SCL_in = '1' then
+          state <= SRA2;
+        elsif SCL_in = '0' then
+          state <= SRS0;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SRS0 =>
+        if SCL_in = '0' then
+          state <= SRS0;
+        elsif SDA_in = '0' and SCL_in = '1' then
+          state <= SRS1;
+        else
+          assert false report "unexpected state" severity ERROR;
+        end if;
+      when SRS1 =>
+        if SDA_in = '0' and SCL_in = '1' then
+          state <= SRS1;
+        elsif SDA_in = '1' and SCL_in = '1' then
+          state <= SL0;
+        end if;
     END CASE;
     END IF;
   END PROCESS;
@@ -192,6 +218,7 @@ BEGIN
   output: PROCESS (state)
   BEGIN
     -- explicitly set to don't care
+    -- other signals are set every time
     data_out <= 'X';
     addr_out <= 'X';
     SDA_out <= 'X';
@@ -263,6 +290,15 @@ BEGIN
         SDA_en <= '0';
         nack_sent <= '0';
       WHEN SRA1 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SRA2 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SRS0 =>
+        SDA_en <= '0';
+        nack_sent <= '0';
+      WHEN SRS1 =>
         SDA_en <= '0';
         nack_sent <= '0';
     END CASE;
