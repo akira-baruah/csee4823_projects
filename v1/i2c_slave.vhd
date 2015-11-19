@@ -8,7 +8,7 @@ END i2c_slave;
 
 ARCHITECTURE beh OF i2c_slave IS
   TYPE state_t IS (SL0, SL1, SL2, SA0, SA1, SA2,
-    SR0, SR1, SR2, SR3, SR4, SRA0, SRA1, SRA2, SRS0, SRS1,
+    SR0, SR1, SR2, SR3, SR4, SRA0, SRA1, SRA2, SRA3, SRA4, SRS0, SRS1,
     SW0, SW1, SW2, SWA0, SWA1);
   signal state: state_t := SL0;
 BEGIN
@@ -67,7 +67,7 @@ BEGIN
           state <= SA2;
         ELSIF (SCL_in = '0' AND addr_match_bs = '1') THEN
           assert byte_done = '1' report "byte_done not high" severity ERROR;
-          state <= SRA0;
+          state <= SRA3;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '0') THEN
           state <= SA0;
         ELSIF (SCL_in = '0' AND addr_match_bs = '0' AND byte_done = '1') THEN
@@ -197,6 +197,18 @@ BEGIN
         else
           assert false report "unexpected state" severity ERROR;
         end if;
+      when SRA3 =>
+        if SCL_in = '0' then
+          state <= SRA3;
+        elsif SCL_in = '1' then
+          state <= SRA4;
+        end if;
+      when SRA4 =>
+        if SCL_in = '1' then
+          state <= SRA4;
+        elsif SCL_in = '0' then
+          state <= SR0;
+        end if;
       when SRS0 =>
         if SCL_in = '0' then
           state <= SRS0;
@@ -295,6 +307,14 @@ BEGIN
       WHEN SRA2 =>
         SDA_en <= '0';
         nack_sent <= '0';
+      WHEN SRA3 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
+      WHEN SRA4 =>
+        SDA_en <= '1';
+        nack_sent <= '0';
+        SDA_out <= '0';
       WHEN SRS0 =>
         SDA_en <= '0';
         nack_sent <= '0';
