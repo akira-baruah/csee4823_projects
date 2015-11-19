@@ -215,7 +215,7 @@ BEGIN
         if SDA_in = '1' and SCL_in = '1' then
           state <= SRS2;
         elsif SDA_in = '0' and SCL_in = '1' then
-          state <= SL0;
+          state <= SL2;
         end if;
     END CASE;
     END IF;
